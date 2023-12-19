@@ -13,9 +13,6 @@ class TestMaccor(unittest.TestCase):
         data = maccor.read_txt(data_file_path)
 
         self.assertIsInstance(data, dict)
-        # self.assertEqual(df.shape, (10, 10))
-
-        print(data)
 
 
 if __name__ == "__main__":

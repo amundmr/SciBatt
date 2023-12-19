@@ -3,6 +3,7 @@
 
 import pandas as pd
 import datetime
+from scibatt.config import *
 
 
 def read_txt(filepath):
@@ -22,7 +23,7 @@ def read_txt(filepath):
 
     df = pd.read_csv(
         filepath,
-        usecols=["Cycle", "DPT Time", "Current", "Voltage", "Capacity", "Step"],
+        usecols=["Cycle", "DPT Time", "Current", "Voltage", "Capacity", "Step", "MD"],
         encoding="UTF-8",
         header=header_line_num,
         delimiter="\t",
@@ -35,13 +36,17 @@ def read_txt(filepath):
 
         return datetime_obj.timestamp()  # Returns unix epoch float
 
-    df["t"] = df["DPT Time"].apply(lambda x: convert_timestamp_to_unix_epoch(x))
+    df[COLUMN_NAME_TIME] = df["DPT Time"].apply(lambda x: convert_timestamp_to_unix_epoch(x))
+
+    # Making sure negative currents are negative
+    df.loc[df['MD'] == "D", "Current"] *= -1
+
 
     # Rename columns to match spec
     df.rename(
         columns={
-            "Current": "I",
-            "Voltage": "U1",
+            "Current": COLUMN_NAME_CURRENT,
+            "Voltage": COLUMN_NAME_VOLTAGE1,
             "Cycle": "Cycle",
         },
         inplace=True,
@@ -52,13 +57,13 @@ def read_txt(filepath):
 
     # Scan groups and add to return dict
     data = {}
-    tol = 0.001
+    tol = CURRENT_ZERO_TOLERANCE
     for num, group_df in groups_step:
-        mean_current = group_df["I"].mean()
-        timestamp = group_df['t'].iloc[0]
+        mean_current = group_df[COLUMN_NAME_CURRENT].mean()
+        timestamp = group_df[COLUMN_NAME_TIME].iloc[0]
 
         # Remove columns we don't want
-        required_columns = ["t", "I", "U1"]
+        required_columns = [COLUMN_NAME_TIME, COLUMN_NAME_CURRENT, COLUMN_NAME_VOLTAGE1]
         group_df = group_df.drop(columns=[col for col in df if col not in required_columns])
 
         if -tol < mean_current < tol:
