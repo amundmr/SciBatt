@@ -3,12 +3,12 @@
 
 import pandas as pd
 import datetime
-from scibatt.config import *
+from scibatt.config import COLUMN_NAMES, CURRENT_ZERO_TOLERANCE
 
 
 def read_txt(filepath):
     """
-    Reads a maccor datafile and returns a dict of of dataframes; 
+    Reads a maccor datafile and returns a dict of of dataframes;
     The key being the standard filename, and the dataframe being the data for each step in the programme
     """
     # This reads the csv file with some extra options
@@ -19,7 +19,9 @@ def read_txt(filepath):
                 header_line_num = i
                 break
         if not header_line_num:
-            raise Exception(f"Could not find headerline in Maccor datafile: {filepath}") # TODO: Convert to custom exception
+            raise Exception(
+                f"Could not find headerline in Maccor datafile: {filepath}"
+            )  # TODO: Convert to custom exception
 
     df = pd.read_csv(
         filepath,
@@ -36,17 +38,18 @@ def read_txt(filepath):
 
         return datetime_obj.timestamp()  # Returns unix epoch float
 
-    df[COLUMN_NAME_TIME] = df["DPT Time"].apply(lambda x: convert_timestamp_to_unix_epoch(x))
+    df[COLUMN_NAMES["TIME"]] = df["DPT Time"].apply(
+        lambda x: convert_timestamp_to_unix_epoch(x)
+    )
 
     # Making sure negative currents are negative
-    df.loc[df['MD'] == "D", "Current"] *= -1
-
+    df.loc[df["MD"] == "D", "Current"] *= -1
 
     # Rename columns to match spec
     df.rename(
         columns={
-            "Current": COLUMN_NAME_CURRENT,
-            "Voltage": COLUMN_NAME_VOLTAGE1,
+            "Current": COLUMN_NAMES["CURRENT"],
+            "Voltage": COLUMN_NAMES["VOLTAGE1"],
             "Cycle": "Cycle",
         },
         inplace=True,
@@ -59,12 +62,18 @@ def read_txt(filepath):
     data = {}
     tol = CURRENT_ZERO_TOLERANCE
     for num, group_df in groups_step:
-        mean_current = group_df[COLUMN_NAME_CURRENT].mean()
-        timestamp = group_df[COLUMN_NAME_TIME].iloc[0]
+        mean_current = group_df[COLUMN_NAMES["CURRENT"]].mean()
+        timestamp = group_df[COLUMN_NAMES["TIME"]].iloc[0]
 
         # Remove columns we don't want
-        required_columns = [COLUMN_NAME_TIME, COLUMN_NAME_CURRENT, COLUMN_NAME_VOLTAGE1]
-        group_df = group_df.drop(columns=[col for col in df if col not in required_columns])
+        required_columns = [
+            COLUMN_NAMES["TIME"],
+            COLUMN_NAMES["CURRENT"],
+            COLUMN_NAMES["VOLTAGE1"],
+        ]
+        group_df = group_df.drop(
+            columns=[col for col in df if col not in required_columns]
+        )
 
         if -tol < mean_current < tol:
             data[f"{timestamp}_cycling_p000.000A"] = group_df

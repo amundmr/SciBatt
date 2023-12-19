@@ -1,7 +1,9 @@
 # Data column names
-COLUMN_NAME_VOLTAGE1 = "U1"
-COLUMN_NAME_CURRENT = "I"
-COLUMN_NAME_TIME = "t"
-COLUMN_NAME_CHARGE = "Q"
+COLUMN_NAMES = {
+    "VOLTAGE1": "U1",
+    "CURRENT": "I",
+    "TIME": "t",
+    "CHARGE": "Q",
+}
 
 CURRENT_ZERO_TOLERANCE = 0.001  # Amperes

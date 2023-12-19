@@ -1,6 +1,4 @@
 import unittest
-import pytest
-import pandas as pd
 from scibatt.readers import maccor
 import os
 
