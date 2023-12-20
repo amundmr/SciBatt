@@ -6,6 +6,9 @@ __pycache__/
 # ruff
 .ruff_cache/
 
+# Documentation is built in GH actions, and doesn't need to be pushed from local
+docs/
+
 # C extensions
 *.so
 
