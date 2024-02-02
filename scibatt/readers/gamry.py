@@ -19,8 +19,13 @@ def read_dta(filepath):
     if gp.get_experiment_type() in REGULAR_EXP_TYPES:
         gp._convert_T_to_Timestamp()
         for curve_num in range(gp.curve_count):
-            df = gp.curves[curve_num].rename(columns={"T":"t", "Vf":"U1", "Im":"I"})
+            df = gp.curves[curve_num].rename(columns={
+                "T":COLUMN_NAMES["TIME"], 
+                "Vf":COLUMN_NAMES["VOLTAGE1"], 
+                "Im":COLUMN_NAMES["CURRENT"]},
+                )
             df = df[[COLUMN_NAMES["TIME"], COLUMN_NAMES["VOLTAGE1"], COLUMN_NAMES["CURRENT"]]]
+            df[COLUMN_NAMES["TIME"]] = df[COLUMN_NAMES["TIME"]].apply(lambda x: x.timestamp())
             df = df.sort_values("t")
 
             mean_current = df[COLUMN_NAMES["CURRENT"]].mean()
