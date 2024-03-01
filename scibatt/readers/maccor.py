@@ -11,21 +11,27 @@ def read_txt(filepath):
     Reads a maccor datafile and returns a dict of of dataframes;
     The key being the standard filename, and the dataframe being the data for each step in the programme
     """
+    maccor_data_format = 2013 # The year of the format
+
     # This reads the csv file with some extra options
     with open(filepath, "r") as f:
         header_line_num = None
         for i, line in enumerate(f.readlines()):
             if line.startswith("Rec\tCycle"):
                 header_line_num = i
+                if "Cycle P" in line:
+                    maccor_data_format = 2023
                 break
         if not header_line_num:
             raise Exception(
                 f"Could not find headerline in Maccor datafile: {filepath}"
             )  # TODO: Convert to custom exception
 
+    cycle_col_name = "Cycle P" if maccor_data_format == 2023 else "Cycle"
+
     df = pd.read_csv(
         filepath,
-        usecols=["Cycle", "DPT Time", "Current", "Voltage", "Capacity", "Step", "MD"],
+        usecols=[cycle_col_name, "DPT Time", "Current", "Voltage", "Capacity", "Step", "MD"],
         encoding="UTF-8",
         header=header_line_num,
         delimiter="\t",
@@ -33,7 +39,10 @@ def read_txt(filepath):
 
     # Modifying time
     def convert_timestamp_to_unix_epoch(timestamp_str):
-        timestamp_format = "%m/%d/%Y %H:%M:%S"
+        if maccor_data_format == 2023:
+            timestamp_format = "%d.%m.%Y %H:%M:%S"
+        else:
+            timestamp_format = "%m/%d/%Y %H:%M:%S"
         datetime_obj = datetime.datetime.strptime(timestamp_str, timestamp_format)
 
         return datetime_obj.timestamp()  # Returns unix epoch float
@@ -50,7 +59,7 @@ def read_txt(filepath):
         columns={
             "Current": COLUMN_NAMES["CURRENT"],
             "Voltage": COLUMN_NAMES["VOLTAGE1"],
-            "Cycle": "Cycle",
+            cycle_col_name: "Cycle",
         },
         inplace=True,
     )
