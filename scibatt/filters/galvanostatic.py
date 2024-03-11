@@ -47,6 +47,7 @@ def transform_raw(data):
     for key, df in data.items():
         dfs.append(df)
     concat = pd.concat(dfs)
+    concat.sort_values(by=COLUMN_NAMES["TIME"], inplace=True)
     return (
         concat[COLUMN_NAMES["TIME"]].to_numpy(),
         concat[COLUMN_NAMES["VOLTAGE1"]].to_numpy(),

@@ -6,7 +6,7 @@ import datetime
 from scibatt.config import COLUMN_NAMES, CURRENT_ZERO_TOLERANCE
 
 
-def read_txt(filepath):
+def read_txt(filepath, raw = False):
     """
     Reads a maccor datafile and returns a dict of of dataframes;
     The key being the standard filename, and the dataframe being the data for each step in the programme
@@ -63,6 +63,11 @@ def read_txt(filepath):
         },
         inplace=True,
     )
+
+    # TODO: This really does not fit into the system. The whole data storage system should be changed probably.
+    # Was done to be able to get the raw data and print it.
+    if raw:
+        return df
 
     # Group by step to separate steps
     groups_step = df.groupby("Step")
