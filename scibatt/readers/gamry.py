@@ -2,6 +2,8 @@
 """Data-readers for Gamry"""
 
 import gamry_parser
+import regex as re
+import pandas as pd
 from scibatt.config import COLUMN_NAMES, CURRENT_ZERO_TOLERANCE
 
 
@@ -12,12 +14,22 @@ EIS_EXP_TYPE = "GALVEIS"
 
 
 def read_dta(filepath):
-    gp = gamry_parser.GamryParser()
-    gp.load(filepath)
+    gp = gamry_parser.GamryParser(filename=filepath)
+    gp.load()
     data = {}
 
     if gp.get_experiment_type() in REGULAR_EXP_TYPES:
-        gp._convert_T_to_Timestamp()
+        #gp._convert_T_to_Timestamp() # This tries to check if day is first in the string, but the check fails.
+        # The following is my own implementation, simply always assuming day first.
+
+        start_time = pd.to_datetime(
+            gp.header["DATE"] + " " + gp.header["TIME"],
+            dayfirst=True,
+        )
+        for curve in gp.curves:
+            
+            curve["T"] = start_time + pd.to_timedelta(curve["T"], "s")
+
         for curve_num in range(gp.curve_count):
             df = gp.curves[curve_num].rename(columns={
                 "T":COLUMN_NAMES["TIME"], 
