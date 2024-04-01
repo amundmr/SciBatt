@@ -2,7 +2,6 @@
 """Data-readers for Gamry"""
 
 import gamry_parser
-import regex as re
 import pandas as pd
 from scibatt.config import COLUMN_NAMES, CURRENT_ZERO_TOLERANCE
 
@@ -27,7 +26,6 @@ def read_dta(filepath):
             dayfirst=True,
         )
         for curve in gp.curves:
-            
             curve["T"] = start_time + pd.to_timedelta(curve["T"], "s")
 
         for curve_num in range(gp.curve_count):
