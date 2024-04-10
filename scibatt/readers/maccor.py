@@ -39,11 +39,16 @@ def read_txt(filepath, raw = False):
 
     # Modifying time
     def convert_timestamp_to_unix_epoch(timestamp_str):
-        if maccor_data_format == 2023:
+        try:
             timestamp_format = "%d.%m.%Y %H:%M:%S"
-        else:
-            timestamp_format = "%m/%d/%Y %H:%M:%S"
-        datetime_obj = datetime.datetime.strptime(timestamp_str, timestamp_format)
+            datetime_obj = datetime.datetime.strptime(timestamp_str, timestamp_format)
+        except:
+            try:
+                timestamp_format = "%d/%m/%Y %H:%M:%S"
+                datetime_obj = datetime.datetime.strptime(timestamp_str, timestamp_format)
+            except Exception as e:
+                print(f"Cannot parse datetime format in maccor reader. Error: {e}")
+
 
         return datetime_obj.timestamp()  # Returns unix epoch float
 
